@@ -1,0 +1,29 @@
+name: Build Windows
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar (CMake + Visual Studio)
+        run: cmake -B build -G "Visual Studio 17 2022" -A x64 -DWILBO_BUILD_TESTS=ON
+
+      - name: Compilar
+        run: cmake --build build --config Release --parallel
+
+      - name: Rodar testes
+        working-directory: build
+        run: .\WilboTests_artefacts\Release\WilboTests.exe
+
+      - name: Enviar o programa
+        uses: actions/upload-artifact@v4
+        with:
+          name: WilboRig-Windows
+          path: |
+            build/WilboRig_artefacts/Release/Standalone/*.exe
+            build/WilboRig_artefacts/Release/VST3/**
