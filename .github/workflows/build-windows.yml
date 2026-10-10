@@ -10,20 +10,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configurar (CMake + Visual Studio)
-        run: cmake -B build -G "Visual Studio 17 2022" -A x64 -DWILBO_BUILD_TESTS=ON
+      - name: Configurar (CMake + Visual Studio instalado)
+        run: cmake -B build -A x64 -DWILBO_BUILD_TESTS=ON
 
       - name: Compilar
         run: cmake --build build --config Release --parallel
 
       - name: Rodar testes
-        working-directory: build
-        run: .\WilboTests_artefacts\Release\WilboTests.exe
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem build -Recurse -Filter WilboTests.exe | Select-Object -First 1
+          & $exe.FullName
+          if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - name: Enviar o programa
         uses: actions/upload-artifact@v4
         with:
           name: WilboRig-Windows
+          if-no-files-found: error
           path: |
             build/WilboRig_artefacts/Release/Standalone/*.exe
             build/WilboRig_artefacts/Release/VST3/**
